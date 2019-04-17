@@ -1,0 +1,34 @@
+{
+  "version": "0.1.0",
+  "keywords": [
+    "textlintrule"
+  ],
+  "main": "lib/index.js",
+  "files": [
+    "lib/",
+    "src/"
+  ],
+  "scripts": {
+    "test": "textlint-scripts test",
+    "build": "textlint-scripts build",
+    "prepublish": "npm run --if-present build"
+  },
+  "devDependencies": {
+    "textlint-scripts": "^1.2.4"
+  },
+  "name": "textlint-rule-spelling",
+  "description": "A textlint rule for spelling of languages as much as possible",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ta2gch/textlint-rule-spelling.git"
+  },
+  "author": "TANIGUCHI Masaya",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/ta2gch/textlint-rule-spelling/issues"
+  },
+  "homepage": "https://github.com/ta2gch/textlint-rule-spelling#readme"
+}
