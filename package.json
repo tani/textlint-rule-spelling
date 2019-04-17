@@ -14,6 +14,7 @@
     "prepublish": "npm run --if-present build"
   },
   "devDependencies": {
+    "dictionary-en-us": "^2.0.0",
     "textlint-scripts": "^1.2.4"
   },
   "name": "textlint-rule-spelling",
@@ -30,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/ta2gch/textlint-rule-spelling/issues"
   },
-  "homepage": "https://github.com/ta2gch/textlint-rule-spelling#readme"
+  "homepage": "https://github.com/ta2gch/textlint-rule-spelling#readme",
+  "dependencies": {
+    "nspell": "^2.1.2"
+  }
 }
