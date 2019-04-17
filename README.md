@@ -6,7 +6,7 @@ A textlint rule for spelling of languages as much as possible
 
 Install with [npm](https://www.npmjs.com/):
 
-    npm install textlint-rule-spelling
+    npm install textlint-rule-spelling dictionary-en-us # or dictionary-fr, ...
 
 ## Usage
 
@@ -15,7 +15,10 @@ Via `.textlintrc`(Recommended)
 ```json
 {
     "rules": {
-        "spelling": true
+        "spelling": {
+        "language": "en-us",
+            "skipPatterns": ["JavaScript"]
+        }
     }
 }
 ```
