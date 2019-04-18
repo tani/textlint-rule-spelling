@@ -1,9 +1,10 @@
 "use strict";
-const nspell = require("nspell");
-const { promisify } = require("util");
+// eslint-disable-next-line no-unused-vars
 const regeneratorRuntime = require("regenerator-runtime");
-const { matchPatterns } = require("@textlint/regexp-string-matcher");
+const nspell = require("nspell");
 const StringSource = require("textlint-util-to-string");
+const { promisify } = require("util");
+const { matchPatterns } = require("@textlint/regexp-string-matcher");
 
 const reporter = (
   { Syntax, RuleError, report, getSource, fixer },
