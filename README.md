@@ -1,4 +1,4 @@
-# textlint-rule-spelling
+# textlint-rule-spelling [![Build Status](https://dev.azure.com/ta2gch/ta2gch/_apis/build/status/ta2gch.textlint-rule-spelling?branchName=master)](https://dev.azure.com/ta2gch/ta2gch/_build/latest?definitionId=3&branchName=master)
 
 A textlint rule for spelling of languages as much as possible
 
