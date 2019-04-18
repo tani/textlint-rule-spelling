@@ -16,23 +16,26 @@ const reporter = (
       const dictionary = require(`dictionary-${language}`);
       const spell = nspell(await promisify(dictionary)());
       const regExp = /\w+/g;
-      const excludes = matchPatterns(text, skipPatterns);
-      let matches;
-      while ((matches = regExp.exec(text)) !== null) {
+      for (
+        let matches = regExp.exec(text);
+        matches !== null;
+        matches = regExp.exec(text)
+      ) {
         const originalIndex = source.originalIndexFromIndex(matches.index);
         const originalRange = [
           originalIndex,
           originalIndex + matches[0].length
         ];
+        const excludes = matchPatterns(text, skipPatterns);
         const doesContain = exclude =>
           exclude.startIndex >= originalRange[0] &&
           originalRange[1] <= exclude.endIndex;
         if (!excludes.some(doesContain) && !spell.correct(matches[0])) {
           const suggestions = spell.suggest(matches[0]);
-          let fix;
-          if (suggestions.length !== 0) {
-            fix = fixer.replaceTextRange(originalRange, suggestions[0]);
-          }
+          const fix =
+            suggestions.length === 1
+              ? fixer.replaceTextRange(originalRange, suggestions[0])
+              : undefined;
           const message = `${matches[0]} -> ${suggestions.join(", ")}`;
           const ruleError = new RuleError(message, {
             index: originalIndex,

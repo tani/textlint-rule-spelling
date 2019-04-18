@@ -14,7 +14,6 @@
     "prepublish": "npm run --if-present build"
   },
   "devDependencies": {
-    "dictionary-en-us": "^2.0.0",
     "prettier": "^1.17.0",
     "textlint-scripts": "^1.2.4"
   },
@@ -35,6 +34,7 @@
   "homepage": "https://github.com/ta2gch/textlint-rule-spelling#readme",
   "dependencies": {
     "@textlint/regexp-string-matcher": "^1.0.2",
+    "dictionary-en-us": "^2.0.0",
     "nspell": "^2.1.2",
     "regenerator-runtime": "^0.13.2",
     "textlint-util-to-string": "^2.1.1"
