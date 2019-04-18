@@ -8,6 +8,7 @@ Install with [npm](https://www.npmjs.com/):
 
     npm install textlint-rule-spelling dictionary-en-us # or dictionary-fr, ...
 
+The dictionaries are available at [wooorm/dictionaries](https://github.com/wooorm/dictionaries)
 ## Usage
 
 Via `.textlintrc`(Recommended)
