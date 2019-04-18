@@ -16,7 +16,7 @@ Via `.textlintrc`(Recommended)
 {
     "rules": {
         "spelling": {
-        "language": "en-us",
+            "language": "en-us",
             "skipPatterns": ["JavaScript"]
         }
     }
