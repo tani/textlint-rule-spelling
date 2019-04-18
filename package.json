@@ -9,7 +9,9 @@
     "src/"
   ],
   "scripts": {
-    "test": "eslint src/index.js && textlint-scripts test",
+    "lint": "eslint {src,test}/*.js",
+    "pretest": "npm run lint",
+    "test": "textlint-scripts test",
     "build": "textlint-scripts build",
     "prepublish": "npm run --if-present build"
   },
