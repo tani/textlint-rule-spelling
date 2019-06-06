@@ -41,7 +41,7 @@ const reporter = (
       const originalRange = [originalIndex, originalIndex + matches[0].length];
       const excludes = matchPatterns(text, skipPatterns);
       const doesContain = exclude =>
-        exclude.startIndex >= originalRange[0] &&
+        exclude.startIndex <= originalRange[0] &&
         originalRange[1] <= exclude.endIndex;
       if (!excludes.some(doesContain) && !spell.correct(matches[0])) {
         const suggestions = spell.suggest(matches[0]);
