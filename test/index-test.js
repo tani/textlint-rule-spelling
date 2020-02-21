@@ -15,7 +15,14 @@ tester.run(
     ]
   },
   {
-    valid: ["text", "npm"],
+    valid: [
+      "text",
+      "npm is amazing",
+      "these test texts are wonderful!",
+      '"this should be" spelled correctly',
+      "hasn't this passed the test?",
+      "spelling is hard, we must meet our user's needs"
+    ],
     invalid: [
       {
         text: "It is colour.",

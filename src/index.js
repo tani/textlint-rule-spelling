@@ -31,7 +31,7 @@ const reporter = (
     const source = new StringSource(node);
     const dictionary = require(`dictionary-${language}`);
     const spell = nspell(await promisify(dictionary)());
-    const regExp = /\w+/g;
+    const regExp = /[^ ,.?!"]+/g;
     for (
       let matches = regExp.exec(text);
       matches !== null;
