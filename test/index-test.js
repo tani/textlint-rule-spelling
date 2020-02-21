@@ -20,6 +20,9 @@ tester.run(
       "npm is amazing",
       "these test texts are wonderful!",
       '"this should be" spelled correctly',
+      "Sometimes (things like this) can catch us out()",
+      "Braces {} are {hard}",
+      "Square [brackets] are also hard[]",
       "hasn't this passed the test?",
       "spelling is hard, we must meet our user's needs"
     ],
