@@ -4,7 +4,7 @@ const tester = new TextLintTester();
 const rule = require("../src/index");
 
 tester.run(
-  "spelling",
+  "spelling basics",
   {
     rules: [
       {

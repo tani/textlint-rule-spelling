@@ -41,8 +41,9 @@
   "homepage": "https://github.com/ta2gch/textlint-rule-spelling#readme",
   "dependencies": {
     "@textlint/regexp-string-matcher": "^1.1.0",
-    "nspell": "^2.1.2",
-    "textlint-rule-helper": "^2.1.1",
-    "textlint-util-to-string": "^3.0.0"
+    "nspell": "^2.1.2"
+  },
+  "peerDependencies": {
+    "textlint": ">= 5.5.0"
   }
 }
