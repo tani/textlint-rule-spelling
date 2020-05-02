@@ -99,11 +99,7 @@ const reporter = function (
     if (!text) return;
     const wordDefinitionRegex = new RegExp(optionWordDefinitionRegex);
 
-    const excludes = matchPatterns(text, skipPatterns);
-    const noExclusionsOverlapWord = getNoExclusionsOverlapWord(
-      excludes,
-      indexOffset
-    );
+    let noExclusionsOverlapWord;
 
     let matches;
     while ((matches = wordDefinitionRegex.exec(text)) !== null) {
@@ -117,6 +113,12 @@ const reporter = function (
       const originalWordRange = [originalIndex, originalIndex + word.length];
 
       if (!nSpell.correct(word)) {
+        noExclusionsOverlapWord =
+          noExclusionsOverlapWord ||
+          getNoExclusionsOverlapWord(
+            matchPatterns(text, skipPatterns),
+            indexOffset
+          );
         if (noExclusionsOverlapWord(originalWordRange)) {
           report(node, ruleErrorBuilder(word, originalWordRange));
         }
