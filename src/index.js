@@ -31,59 +31,95 @@ const constructNSpell = function (language) {
   return nspell(affix, dictionary);
 };
 
-const doesContain = (
-  exclude,
-  [originalRangeStart, originalRangeEnd],
-  indexOffset
-) => {
-  const startssBeforeEndOfExclusion =
-    originalRangeStart <= exclude.endIndex + indexOffset;
-  const endsAfterStartOfExclusion =
-    originalRangeEnd >= exclude.startIndex + indexOffset;
-  return startssBeforeEndOfExclusion && endsAfterStartOfExclusion;
+const getRuleErrorBuilder = (nSpell, suggestCorrections, RuleError, fixer) => {
+  if (suggestCorrections) {
+    return (word, originalRange) => {
+      const suggestions = nSpell.suggest(word);
+      const fix =
+        suggestions.length === 1
+          ? fixer.replaceTextRange(originalRange, suggestions[0])
+          : undefined;
+      const message = `${word} -> ${suggestions.join(", ")}`;
+      return new RuleError(message, {
+        index: originalRange[0],
+        fix: fix,
+      });
+    };
+  } else {
+    return (word, originalRange) => {
+      return new RuleError(word, {
+        index: originalRange[0],
+      });
+    };
+  }
 };
 
-const reporter = function (context, options) {
-  const { Syntax, RuleError, fixer, report } = context;
-  const {
+const doesExclusionOverlapWord = (
+  [exclusionRangeStart, exclusionRangeEnd],
+  [wordRangeStart, wordRangeEnd]
+) => {
+  const startsBeforeEndOfExclusion = wordRangeStart <= exclusionRangeEnd;
+  const endsAfterStartOfExclusion = wordRangeEnd >= exclusionRangeStart;
+  return startsBeforeEndOfExclusion && endsAfterStartOfExclusion;
+};
+
+const getNoExclusionsOverlapWord = (exclusions, indexOffset) => {
+  if (exclusions && exclusions.length > 0) {
+    return (originalRange) => {
+      return !exclusions.some(({ startIndex, endIndex }) =>
+        doesExclusionOverlapWord(
+          [startIndex + indexOffset, endIndex + indexOffset],
+          originalRange
+        )
+      );
+    };
+  }
+  return (originalRange) => true;
+};
+
+const reporter = function (
+  { Syntax, RuleError, fixer, report },
+  {
     language = "en",
     skipPatterns = [],
-    optWordDefinitionExpression = /[\w']+/g,
-  } = options;
-  const spell = constructNSpell(language);
+    wordDefinitionRegex: optionWordDefinitionRegex = /[\w']+/g,
+    suggestCorrections = true,
+  }
+) {
+  const nSpell = constructNSpell(language);
+
+  const ruleErrorBuilder = getRuleErrorBuilder(
+    nSpell,
+    suggestCorrections,
+    RuleError,
+    fixer
+  );
 
   const handleText = (node, text, indexOffset) => {
     if (!text) return;
-    const wordDefinitionExpression = new RegExp(optWordDefinitionExpression);
-    let matches;
+    const wordDefinitionRegex = new RegExp(optionWordDefinitionRegex);
 
-    while ((matches = wordDefinitionExpression.exec(text)) !== null) {
+    const excludes = matchPatterns(text, skipPatterns);
+    const noExclusionsOverlapWord = getNoExclusionsOverlapWord(
+      excludes,
+      indexOffset
+    );
+
+    let matches;
+    while ((matches = wordDefinitionRegex.exec(text)) !== null) {
       // This is necessary to avoid infinite loops with zero-width matches
-      if (matches.index === wordDefinitionExpression.lastIndex) {
-        wordDefinitionExpression.lastIndex++;
+      if (matches.index === wordDefinitionRegex.lastIndex) {
+        wordDefinitionRegex.lastIndex++;
       }
       const originalIndex = indexOffset + matches.index;
+      const word = matches[0];
 
-      const originalRange = [originalIndex, originalIndex + matches[0].length];
+      const originalWordRange = [originalIndex, originalIndex + word.length];
 
-      const excludes = matchPatterns(text, skipPatterns);
-      if (
-        !excludes.some((exclude) =>
-          doesContain(exclude, originalRange, indexOffset)
-        ) &&
-        !spell.correct(matches[0])
-      ) {
-        const suggestions = spell.suggest(matches[0]);
-        const fix =
-          suggestions.length === 1
-            ? fixer.replaceTextRange(originalRange, suggestions[0])
-            : undefined;
-        const message = `${matches[0]} -> ${suggestions.join(", ")}`;
-        const ruleError = new RuleError(message, {
-          index: originalIndex,
-          fix: fix,
-        });
-        report(node, ruleError);
+      if (!nSpell.correct(word)) {
+        if (noExclusionsOverlapWord(originalWordRange)) {
+          report(node, ruleErrorBuilder(word, originalWordRange));
+        }
       }
     }
   };
