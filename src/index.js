@@ -12,55 +12,147 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with textlint-plugin-latex2e.  If not, see <http://www.gnu.org/licenses/>.
+ * along with textlint-rule-spelling.  If not, see <http://www.gnu.org/licenses/>.
  */
 "use strict";
-// eslint-disable-next-line no-unused-vars
-const regeneratorRuntime = require("regenerator-runtime");
+
+const fs = require("fs");
+const path = require("path");
 const nspell = require("nspell");
-const StringSource = require("textlint-util-to-string");
-const { promisify } = require("util");
 const { matchPatterns } = require("@textlint/regexp-string-matcher");
 
-const reporter = (
-  { Syntax, RuleError, report, getSource, fixer },
-  { language = "en-us", skipPatterns = [] }
-) => ({
-  async [Syntax.Paragraph](node) {
-    const text = getSource(node);
-    const source = new StringSource(node);
-    const dictionary = require(`dictionary-${language}`);
-    const spell = nspell(await promisify(dictionary)());
-    const regExp = /[^ ,.?!(){}\[\]"]+/g;
-    for (
-      let matches = regExp.exec(text);
-      matches !== null;
-      matches = regExp.exec(text)
-    ) {
-      const originalIndex = source.originalIndexFromIndex(matches.index);
-      const originalRange = [originalIndex, originalIndex + matches[0].length];
-      const excludes = matchPatterns(text, skipPatterns);
-      const doesContain = exclude =>
-        source.originalIndexFromIndex(exclude.startIndex) <= originalRange[0] &&
-        originalRange[1] <= source.originalIndexFromIndex(exclude.endIndex);
-      if (!excludes.some(doesContain) && !spell.correct(matches[0])) {
-        const suggestions = spell.suggest(matches[0]);
-        const fix =
-          suggestions.length === 1
-            ? fixer.replaceTextRange(originalRange, suggestions[0])
-            : undefined;
-        const message = `${matches[0]} -> ${suggestions.join(", ")}`;
-        const ruleError = new RuleError(message, {
-          index: originalIndex,
-          fix
-        });
-        report(node, ruleError);
+const constructNSpell = function (language) {
+  const base = require.resolve(`dictionary-${language}`);
+  const dictionary = fs.readFileSync(
+    path.join(base, "..", "index.dic"),
+    "utf-8"
+  );
+  const affix = fs.readFileSync(path.join(base, "..", "index.aff"), "utf-8");
+  return nspell(affix, dictionary);
+};
+
+const getRuleErrorBuilder = (nSpell, suggestCorrections, RuleError, fixer) => {
+  if (suggestCorrections) {
+    return (word, originalRange) => {
+      const suggestions = nSpell.suggest(word);
+      const fix =
+        suggestions.length === 1
+          ? fixer.replaceTextRange(originalRange, suggestions[0])
+          : undefined;
+      const message = `${word} -> ${suggestions.join(", ")}`;
+      return new RuleError(message, {
+        index: originalRange[0],
+        fix: fix,
+      });
+    };
+  } else {
+    return (word, originalRange) => {
+      return new RuleError(word, {
+        index: originalRange[0],
+      });
+    };
+  }
+};
+
+const doesExclusionOverlapWord = (
+  [exclusionRangeStart, exclusionRangeEnd],
+  [wordRangeStart, wordRangeEnd]
+) => {
+  const startsBeforeEndOfExclusion = wordRangeStart <= exclusionRangeEnd;
+  const endsAfterStartOfExclusion = wordRangeEnd >= exclusionRangeStart;
+  return startsBeforeEndOfExclusion && endsAfterStartOfExclusion;
+};
+
+const getNoExclusionsOverlapWord = (exclusions, indexOffset) => {
+  if (exclusions && exclusions.length > 0) {
+    return (originalRange) => {
+      return !exclusions.some(({ startIndex, endIndex }) =>
+        doesExclusionOverlapWord(
+          [startIndex + indexOffset, endIndex + indexOffset],
+          originalRange
+        )
+      );
+    };
+  }
+  return (originalRange) => true;
+};
+
+const reporter = function (
+  { Syntax, RuleError, fixer, report },
+  {
+    language = "en",
+    skipPatterns = [],
+    wordDefinitionRegexp: optionWordDefinitionRegexp = /[\w']+/g,
+    suggestCorrections = true,
+  }
+) {
+  const nSpell = constructNSpell(language);
+
+  const ruleErrorBuilder = getRuleErrorBuilder(
+    nSpell,
+    suggestCorrections,
+    RuleError,
+    fixer
+  );
+
+  const handleText = (node, text, indexOffset) => {
+    if (!text) return;
+    const wordDefinitionRegexp = new RegExp(optionWordDefinitionRegexp);
+
+    let noExclusionsOverlapWord;
+
+    while (true) {
+      const matches = wordDefinitionRegexp.exec(text);
+      if (matches === null) {
+        break;
+      }
+      if (matches.index === wordDefinitionRegexp.lastIndex) {
+        wordDefinitionRegexp.lastIndex++;
+      }
+      const originalIndex = indexOffset + matches.index;
+      const word = matches[0];
+
+      const originalWordRange = [originalIndex, originalIndex + word.length];
+
+      if (!nSpell.correct(word)) {
+        noExclusionsOverlapWord =
+          noExclusionsOverlapWord ||
+          getNoExclusionsOverlapWord(
+            matchPatterns(text, skipPatterns),
+            indexOffset
+          );
+        if (noExclusionsOverlapWord(originalWordRange)) {
+          report(node, ruleErrorBuilder(word, originalWordRange));
+        }
       }
     }
-  }
-});
+  };
+
+  return {
+    [Syntax.Str](node) {
+      const { value } = node;
+      handleText(node, value, 0);
+    },
+    [Syntax.Link](node) {
+      const { title, raw } = node;
+      handleText(node, title, raw.indexOf(title));
+    },
+    [Syntax.Image](node) {
+      const { alt, title, raw } = node;
+
+      if (alt) {
+        const indexOfAlt = raw.indexOf(alt);
+        handleText(node, alt, indexOfAlt);
+      }
+      if (title) {
+        const indexOfTitle = raw.indexOf(title);
+        handleText(node, title, indexOfTitle);
+      }
+    },
+  };
+};
 
 module.exports = {
   linter: reporter,
-  fixer: reporter
+  fixer: reporter,
 };

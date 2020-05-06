@@ -4,15 +4,15 @@ const tester = new TextLintTester();
 const rule = require("../src/index");
 
 tester.run(
-  "spelling",
+  "spelling basics",
   {
     rules: [
       {
         ruleId: "spelling",
         rule,
-        options: { language: "en-us", skipPatterns: ["npm"] }
-      }
-    ]
+        options: { language: "en", skipPatterns: ["npm"] },
+      },
+    ],
   },
   {
     valid: [
@@ -24,7 +24,11 @@ tester.run(
       "Braces {} are {hard}",
       "Square [brackets] are also hard[]",
       "hasn't this passed the test?",
-      "spelling is hard, we must meet our user's needs"
+      "spelling is hard, we must meet our user's needs",
+      "spelling is hard; we must meet our user's needs",
+      "spelling is hard, we must meet our user's needs and/or requirements",
+      `spelling is hard, we must meet our user's needs
+and/or requirements`,
     ],
     invalid: [
       {
@@ -34,9 +38,9 @@ tester.run(
           {
             message: "colour -> color",
             line: 1,
-            column: 7
-          }
-        ]
+            column: 7,
+          },
+        ],
       },
       {
         text: `It has many colour.
@@ -49,15 +53,15 @@ One more color`,
           {
             message: "colour -> color",
             line: 1,
-            column: 13
+            column: 13,
           },
           {
             message: "colour -> color",
             line: 3,
-            column: 10
-          }
-        ]
-      }
-    ]
+            column: 10,
+          },
+        ],
+      },
+    ],
   }
 );
