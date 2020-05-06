@@ -82,7 +82,7 @@ const reporter = function (
   {
     language = "en",
     skipPatterns = [],
-    wordDefinitionRegex: optionWordDefinitionRegex = /[\w']+/g,
+    wordDefinitionRegexp: optionWordDefinitionRegexp = /[\w']+/g,
     suggestCorrections = true,
   }
 ) {
@@ -97,15 +97,17 @@ const reporter = function (
 
   const handleText = (node, text, indexOffset) => {
     if (!text) return;
-    const wordDefinitionRegex = new RegExp(optionWordDefinitionRegex);
+    const wordDefinitionRegexp = new RegExp(optionWordDefinitionRegexp);
 
     let noExclusionsOverlapWord;
 
-    let matches;
-    while ((matches = wordDefinitionRegex.exec(text)) !== null) {
-      // This is necessary to avoid infinite loops with zero-width matches
-      if (matches.index === wordDefinitionRegex.lastIndex) {
-        wordDefinitionRegex.lastIndex++;
+    while (true) {
+      const matches = wordDefinitionRegexp.exec(text);
+      if (matches === null) {
+        break;
+      }
+      if (matches.index === wordDefinitionRegexp.lastIndex) {
+        wordDefinitionRegexp.lastIndex++;
       }
       const originalIndex = indexOffset + matches.index;
       const word = matches[0];

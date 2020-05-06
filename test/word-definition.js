@@ -10,7 +10,7 @@ tester.run(
       {
         ruleId: "spelling",
         rule,
-        options: { wordDefinitionExpression: /[\w']+/g },
+        options: { wordDefinitionRegexp: /[\w']+/g },
       },
     ],
   },
