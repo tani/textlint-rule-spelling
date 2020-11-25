@@ -29,6 +29,7 @@ tester.run(
       "spelling is hard, we must meet our user's needs and/or requirements",
       `spelling is hard, we must meet our user's needs
 and/or requirements`,
+      "sometimes single 'quotes' are used too",
     ],
     invalid: [
       {
