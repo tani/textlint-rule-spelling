@@ -97,7 +97,7 @@ const reporter = function (
 
   const handleText = (node, text, indexOffset) => {
     if (!text) return;
-    const wordDefinitionRegexp = new RegExp(optionWordDefinitionRegexp, 'g');
+    const wordDefinitionRegexp = new RegExp(optionWordDefinitionRegexp, "g");
 
     let noExclusionsOverlapWord;
 
