@@ -82,7 +82,7 @@ const reporter = function (
   {
     language = "en",
     skipPatterns = [],
-    wordDefinitionRegexp: optionWordDefinitionRegexp = /[\w']+/g,
+    wordDefinitionRegexp: optionWordDefinitionRegexp = /\b[\w']+\b/g,
     suggestCorrections = true,
   }
 ) {
